@@ -12,9 +12,22 @@ pipeline {
     jdk 'localJdk'
   }
   stages {
+
+    stage ('Scan using Gradle') {
+        steps {
+            withSonarQubeEnv(installationName: 'SonarQubeScanner', credentialsId: 'SonarQubeSecret') {
+            sh "./sample-spring-postgres-app/gradlew sonarqube \
+              -Dsonar.projectKey=${serviceName} \
+              -Dsonar.host.url=${env.SONAR_HOST_URL} \
+              -Dsonar.login=${env.SONAR_AUTH_TOKEN} \
+              -Dsonar.projectName=${serviceName} \
+              -Dsonar.projectVersion=${BUILD_NUMBER}"
+            }
+          }
+    }
     stage('Build') {
       steps {
-        sh 'mvn clean package'
+        sh "./sample-spring-postgres-app/gradlew jibDockerBuild"
       }
       post {
         success {
@@ -23,55 +36,63 @@ pipeline {
         }
       }
     }
-    stage('Unit Test'){
-        steps {
-            sh 'mvn test'
-        }
-    }
-    stage('Integration Test'){
-        steps {
-          sh 'mvn verify -DskipUnitTests'
-        }
-    }
-    stage ('Checkstyle Code Analysis'){
-        steps {
-            sh 'mvn checkstyle:checkstyle'
-        }
-        post {
-            success {
-                echo 'Generated Analysis Result'
-            }
-        }
-    }
-    stage('SonarQube Scanner') {
-      steps {
-        
-        withSonarQubeEnv('SonarQube') {
-
-        sh """
-        mvn sonar:sonar \
-      -Dsonar.projectKey=JavaWebApp \
-      -Dsonar.host.url=http://172.31.31.247:9000 \
-      -Dsonar.login=e0c55b9178ad2365bf7b3848c06780ed2374a22b
-      """
-        }
-      }
-    }
-    stage('Quality Gate'){
-        steps {
-          waitForQualityGate abortPipeline: true
-
-        }
-    }
-    
-    stage("Upload artifact to Nexus"){
-      steps{
-        sh 'mvn clean deploy -DskipTests'
-      }
-      }
-
   }
 }
+
+
+//     stage('Unit Test'){
+//         steps {
+//             sh 'mvn test'
+//         }
+//     }
+//     stage('Integration Test'){
+//         steps {
+//           sh 'mvn verify -DskipUnitTests'
+//         }
+//     }
+//     stage ('Checkstyle Code Analysis'){
+//         steps {
+//             sh 'mvn checkstyle:checkstyle'
+//         }
+//         post {
+//             success {
+//                 echo 'Generated Analysis Result'
+//             }
+//         }
+//     }
+//     stage('SonarQube Scanner') {
+//       steps {
+        
+//         withSonarQubeEnv('SonarQube') {
+
+//         sh """
+//         mvn sonar:sonar \
+//       -Dsonar.projectKey=JavaWebApp \
+//       -Dsonar.host.url=http://172.31.31.247:9000 \
+//       -Dsonar.login=e0c55b9178ad2365bf7b3848c06780ed2374a22b
+//       """
+//         }
+//       }
+//     }
+//     stage('Quality Gate'){
+//         steps {
+//           waitForQualityGate abortPipeline: true
+
+//         }
+//     }
+    
+//     stage("Upload artifact to Nexus"){
+//       steps{
+//         sh 'mvn clean deploy -DskipTests'
+//       }
+//       }
+
+//   }
+// }
+
+
+
+
   //   stage('Upload to Artifactory') {
   //     steps {
   //       sh "mvn clean deploy -DskipTests"
