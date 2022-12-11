@@ -8,7 +8,6 @@ pipeline {
     WORKSPACE = "${env.WORKSPACE}"
   }
   tools {
-    maven 'localMaven'
     jdk 'localJdk'
     gradle "localGradle"
   }
