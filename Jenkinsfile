@@ -16,7 +16,7 @@ pipeline {
 
     stage('Build') {
       steps {
-        sh "./gradlew jibDockerBuild"
+        sh "sudo ./gradlew jibDockerBuild"
       }
       post {
         success {
