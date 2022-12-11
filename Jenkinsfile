@@ -16,9 +16,9 @@ pipeline {
 
     stage('Build') {
       steps {
-        sh """sudo -i   \
-        git clone https://github.com/JosephTing91/k8s-cicd-project.git \
-        cd k8s-cicd-project\
+        sh """sudo -i;  \
+        git clone https://github.com/JosephTing91/k8s-cicd-project.git; \
+        cd k8s-cicd-project;\
         ./gradlew jibDockerBuild
         """
       }
