@@ -10,21 +10,11 @@ pipeline {
   tools {
     maven 'localMaven'
     jdk 'localJdk'
+    gradle "localGradle"
   }
   stages {
 
-    stage ('Scan using Gradle') {
-        steps {
-            withSonarQubeEnv(installationName: 'SonarQubeScanner', credentialsId: 'SonarQubeSecret') {
-            sh "./sample-spring-postgres-app/gradlew sonarqube \
-              -Dsonar.projectKey=${serviceName} \
-              -Dsonar.host.url=${env.SONAR_HOST_URL} \
-              -Dsonar.login=${env.SONAR_AUTH_TOKEN} \
-              -Dsonar.projectName=${serviceName} \
-              -Dsonar.projectVersion=${BUILD_NUMBER}"
-            }
-          }
-    }
+
     stage('Build') {
       steps {
         sh "./sample-spring-postgres-app/gradlew jibDockerBuild"
@@ -35,6 +25,17 @@ pipeline {
           archiveArtifacts artifacts: '**/*.war'
         }
       }
+    }
+
+    stage ('Scan using Gradle') {
+        steps {
+            withSonarQubeEnv(installationName: 'SonarQubeScanner', credentialsId: 'SonarQubeSecret') {
+            sh "./sample-spring-postgres-app/gradlew sonarqube \
+              -Dsonar.projectKey=k8sapp \
+              -Dsonar.host.url=http://172.31.15.143:9000 \
+              -Dsonar.login=57e94e1e0ec6316a051d4a57f941a5911bdc0ef8"
+            }
+          }
     }
   }
 }
